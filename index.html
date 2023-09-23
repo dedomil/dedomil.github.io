@@ -41,6 +41,14 @@
       text-decoration: underline;
       text-decoration-style: dashed;
     }
+
+    .online {
+      color: lightgreen;
+    }
+
+    .offline {
+      color: grey;
+    }
   </style>
 </head>
 
@@ -49,11 +57,46 @@
   <h2>i love computers, animes & books (maybe)</h2>
   <h3>let's connect on socials</h3>
   <ul>
-    <li><a href="https://x.com/aadixl">x</a></li>
+    <li><a href="https://x.com/aadixl">x (formerly twitter)</a></li>
     <li><a href="https://instagram.com/adbtya">instagram</a></li>
     <li><a href="https://linkedin.com/in/dedomil/">linkedin</a></li>
-    <li><a href="https://open.spotify.com/user/31sxskceiulfs5fobscwbnerkgqi">spotify</a></li>
+    <li><a href="https://discord.com/users/970197024928591882">discord </a>
+      <i>(<span id="status" class="offline">offline</span>)</i>
+    </li>
+    <li><a href="https://open.spotify.com/user/31sxskceiulfs5fobscwbnerkgqi">spotify </a>
+      <i>(<span id="spotify" class="offline">playing nothing</span>)</i>
+    </li>
   </ul>
+  <script>
+    let status = document.getElementById("status");
+    let spotify = document.getElementById("spotify");
+    let fetchDiscordStatus = async () => {
+      let dsc = await fetch("https://api.lanyard.rest/v1/users/970197024928591882");
+      let { success, data } = await dsc.json();
+      if (success) {
+        if (data.active_on_discord_web || data.active_on_discord_desktop || data.active_on_discord_mobile) {
+          status.innerText = 'online';
+          status.className = '';
+          status.classList.add('online');
+        } else {
+          status.innerText = 'offline';
+          status.className = '';
+          status.classList.add('offline');
+        }
+        if (Object.keys(data.spotify).length != 0) {
+          spotify.innerHTML = `playing - <a href="https://open.spotify.com/track/${data.spotify.track_id}">${data.spotify.song.toLowerCase()}</a>`
+          spotify.className = '';
+          spotify.classList.add('online');
+        } else {
+          spotify.innerHTML = 'playing nothing';
+          spotify.className = '';
+          spotify.classList.add('offline');
+        }
+      }
+    }
+    fetchDiscordStatus();
+    setInterval(fetchDiscordStatus, 5000);
+  </script>
 </body>
 
 </html>
