@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque&display=swap" rel="stylesheet">
+  <script src="lanyard.js"></script>
   <style>
     body {
       background-color: #1D1F21;
@@ -70,9 +71,7 @@
   <script>
     let status = document.getElementById("status");
     let spotify = document.getElementById("spotify");
-    let fetchDiscordStatus = async () => {
-      let dsc = await fetch("https://api.lanyard.rest/v1/users/970197024928591882");
-      let { success, data } = await dsc.json();
+    let fetchDiscordStatus = async (success, data) => {
       if (success) {
         if (data.active_on_discord_web || data.active_on_discord_desktop || data.active_on_discord_mobile) {
           status.innerText = 'online';
@@ -83,7 +82,7 @@
           status.className = '';
           status.classList.add('offline');
         }
-        if (Object.keys(data.spotify).length != 0) {
+        if (data.listening_to_spotify != false) {
           spotify.innerHTML = `playing - <a href="https://open.spotify.com/track/${data.spotify.track_id}">${data.spotify.song.toLowerCase()}</a>`
           spotify.className = '';
           spotify.classList.add('online');
@@ -94,8 +93,18 @@
         }
       }
     }
-    fetchDiscordStatus();
-    setInterval(fetchDiscordStatus, 5000);
+    function updateStatus(data){
+      if(Object.keys(data).length === 0){
+        console.log("Error fetching status")
+      } else {
+        fetchDiscordStatus(true, data)
+      }
+    }
+    lanyard({
+        userId: "970197024928591882",
+        socket: true,
+        onPresenceUpdate: updateStatus
+    })
   </script>
 </body>
 
