@@ -1,111 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <title>aditya yadav</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8" />
+    <meta name="description" content="aditya's website" />
+  </head>
 
-<head>
-  <title>aditya yadav</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta charset="UTF-8" />
-  <meta name="description" content="aditya's website" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque&display=swap" rel="stylesheet">
-  <script src="lanyard.js"></script>
-  <style>
-    body {
-      background-color: #1D1F21;
-      color: #f0f8ff;
-      font-family: 'Bricolage Grotesque', sans-serif;
-    }
+  <body>
+    <h1
+      onclick="openResume()"
+      style="cursor: pointer"
+      title="click to download resume"
+    >
+      - aditya yadav (a.k.a. dedomil)
+    </h1>
+    <hr />
+    <h2>
+      🎶
+      <span id="status">playing</span>
+      <span id="song" onclick="()=> {}">nothing</span>
+    </h2>
+    <hr />
+    <h3>🎥 socials - don't stalk pls</h3>
+    <ul>
+      <li><a href="#" onclick="message()">message anonymously</a></li>
+      <li><a href="https://x.com/_aydv">x/twitter</a></li>
+      <li><a href="https://instagram.com/adbtya">instagram</a></li>
+      <li><a href="https://youtube.com/@dedomil_">youtube</a></li>
+    </ul>
+    <script>
+      let e = new EventSource("https://dedomil.alwaysdata.net");
+      let songElement = document.getElementById("song");
+      let statusElement = document.getElementById("status");
 
-    a:link {
-      color: #6BFFCC;
-      background-color: transparent;
-      text-decoration: none;
-    }
+      e.addEventListener("user-joined", songChanged);
+      e.addEventListener("track-changed", songChanged);
 
-    a:visited {
-      color: #D480AA;
-      background-color: transparent;
-      text-decoration: none;
-    }
+      function songChanged({ data }) {
+        let songData = JSON.parse(data);
+        songData.playing
+          ? (statusElement.innerText = "playing")
+          : (statusElement.innerText = "last played");
+        songElement.innerHTML = `<a href="https://www.youtube.com/results?search_query=${
+          songData.name
+        } - ${songData.artist}" target="_blank">
+            ${songData.name.toLowerCase()}
+        </a>`;
+      }
 
-    a:hover {
-      color: #BF99B1;
-      background-color: transparent;
-      text-decoration: underline;
-      text-decoration-style: wavy;
-    }
+      function openResume() {
+        window.open("https://api.dedomil.workers.dev/files/cv.pdf");
+      }
 
-    .name {
-      color: #D480AA;
-      cursor: pointer;
-      text-decoration: underline;
-      text-decoration-style: dashed;
-    }
-
-    .online {
-      color: lightgreen;
-    }
-
-    .offline {
-      color: grey;
-    }
-  </style>
-</head>
-
-<body>
-  <h1>hello, i am <span class="name">aditya yadav</span></h1>
-  <h2>i love computers, animes & books (maybe)</h2>
-  <h3>let's connect on socials</h3>
-  <ul>
-    <li><a href="https://x.com/aadixl">x (formerly twitter)</a></li>
-    <li><a href="https://instagram.com/adbtya">instagram</a></li>
-    <li><a href="https://linkedin.com/in/dedomil/">linkedin</a></li>
-    <li><a href="https://discord.com/users/970197024928591882">discord </a>
-      <i>(<span id="status" class="offline">offline</span>)</i>
-    </li>
-    <li><a href="https://open.spotify.com/user/31sxskceiulfs5fobscwbnerkgqi">spotify </a>
-      <i>(<span id="spotify" class="offline">playing nothing</span>)</i>
-    </li>
-  </ul>
-  <script>
-    let status = document.getElementById("status");
-    let spotify = document.getElementById("spotify");
-    let fetchDiscordStatus = async (success, data) => {
-      if (success) {
-        if (data.active_on_discord_web || data.active_on_discord_desktop || data.active_on_discord_mobile) {
-          status.innerText = 'online';
-          status.className = '';
-          status.classList.add('online');
+      async function message() {
+        let message = prompt("- enter your message:");
+        if (!message) return;
+        let response = await fetch("https://api.dedomil.workers.dev/message", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({ message }),
+        });
+        let { status } = await response.json();
+        if (status === 200) {
+          alert("- message sent successfully!");
         } else {
-          status.innerText = 'offline';
-          status.className = '';
-          status.classList.add('offline');
-        }
-        if (data.listening_to_spotify != false) {
-          spotify.innerHTML = `playing - <a href="https://open.spotify.com/track/${data.spotify.track_id}">${data.spotify.song.toLowerCase()}</a>`
-          spotify.className = '';
-          spotify.classList.add('online');
-        } else {
-          spotify.innerHTML = 'playing nothing';
-          spotify.className = '';
-          spotify.classList.add('offline');
+          alert("- internal server error, please contact via email");
         }
       }
-    }
-    function updateStatus(data){
-      if(Object.keys(data).length === 0){
-        console.log("Error fetching status")
-      } else {
-        fetchDiscordStatus(true, data)
-      }
-    }
-    lanyard({
-        userId: "970197024928591882",
-        socket: true,
-        onPresenceUpdate: updateStatus
-    })
-  </script>
-</body>
-
+    </script>
+  </body>
 </html>
